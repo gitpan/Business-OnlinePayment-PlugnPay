@@ -6,7 +6,7 @@ use Carp qw(carp croak);
 
 use base qw(Business::OnlinePayment::HTTPS);
 
-$VERSION = '0.02';
+$VERSION = '0.03';
 $VERSION = eval $VERSION;
 $DEBUG   = 0;
 
@@ -93,6 +93,9 @@ sub _map_fields {
 
     $self->transaction_type( $content{'type'} );
 
+    $content{'transflags'} = 'recurring'
+      if lc( $content{'recurring_billing'} ) eq 'yes';
+
     # stuff it back into %content
     $self->content(%content);
 }
@@ -164,7 +167,7 @@ sub submit {
                                 country ipaddress accttype orderID tax
                                 shipping app-level order-id acct_code magstripe
                                 marketdata carissuenum cardstartdate descrcodes
-                                retailterms) ];
+                                retailterms transflags ) ];
     $optional{CC_newreturn} = [ qw( orderID card-address1 card-address2
                                     card-city card-state card-zip card-country
                                     notify-email
@@ -452,6 +455,7 @@ from content(%content):
       zip                => 'ship_zip',
       country            => 'ship_country',
 
+      transflags         => 'recurring' if ($content{recurring_billing}) eq 'yes',
 
 =head1 Mapping plugnpay transaction responses to object methods
 
